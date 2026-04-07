@@ -1,0 +1,145 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(253, 250, 246, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ink-100);
+  padding: 0 clamp(16px, 4vw, 48px);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.logoEyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+
+.logoTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 700;
+  color: var(--ink-800);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.logoAccent {
+  color: var(--red-500);
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-400);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gold-600);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: var(--paper-warm);
+  border-color: var(--ink-200);
+  color: var(--ink-700);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--gold-dim);
+  border-color: var(--gold-400);
+  color: var(--gold-600);
+}
+
+.btnPrimary {
+  background: var(--ink-800);
+  border-color: var(--ink-800);
+  color: var(--paper);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--red-500);
+  border-color: var(--red-500);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(201, 76, 46, 0.3);
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .badge { display: none; }
+  .btn { padding: 8px 12px; font-size: 12px; }
+}

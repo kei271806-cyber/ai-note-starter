@@ -1,0 +1,283 @@
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: calc(100vh - 73px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── サイドバー ── */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  border-right: 1px solid var(--ink-100);
+  background: var(--paper-card);
+  overflow-y: auto;
+  height: calc(100vh - 73px);
+  position: sticky;
+  top: 73px;
+}
+
+/* 統計グリッド */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  background: var(--paper-warm);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+  gap: 3px;
+}
+
+.statNum {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink-800);
+  line-height: 1;
+}
+
+.statNumPending { color: var(--ink-400); }
+.statNumDone    { color: var(--green-500); }
+
+.statName {
+  font-size: 10px;
+  color: var(--ink-400);
+  letter-spacing: 0.05em;
+}
+
+/* フィルタータブ */
+.filterTabs {
+  display: flex;
+  background: var(--ink-100);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.filterTab {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--ink-400);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filterTabActive {
+  background: var(--paper-card);
+  color: var(--ink-800);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 記事リスト */
+.articleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* スケルトン */
+.skeletonCard {
+  padding: 14px;
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonBadge {
+  height: 20px;
+  width: 60px;
+  border-radius: 100px;
+}
+
+.skeletonTitle {
+  height: 40px;
+  border-radius: var(--radius-sm);
+}
+
+.skeletonMeta {
+  height: 14px;
+  width: 80px;
+  border-radius: var(--radius-sm);
+}
+
+/* 空状態 */
+.emptyList {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--ink-400);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.emptyListSub {
+  font-size: 12px;
+  margin-top: 6px;
+  color: var(--ink-200);
+}
+
+/* 更新ボタン */
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--ink-400);
+  background: transparent;
+  border: 1px dashed var(--ink-200);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  color: var(--ink-700);
+  border-color: var(--ink-400);
+  background: var(--paper-warm);
+}
+
+.refreshBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── メインエリア ── */
+.main {
+  padding: clamp(20px, 3vw, 40px);
+  overflow-y: auto;
+  min-height: calc(100vh - 73px);
+}
+
+/* プレースホルダー */
+.placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.placeholderInner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: fadeIn 0.5s ease;
+}
+
+.placeholderIcon {
+  color: var(--ink-800);
+  margin-bottom: 8px;
+  opacity: 0.2;
+}
+
+.placeholderTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+.placeholderSub {
+  font-size: 13px;
+  color: var(--ink-400);
+  line-height: 1.7;
+}
+
+/* フロー図 */
+.placeholderFlow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 16px 24px;
+  background: var(--paper-warm);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+}
+
+.flowStep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-600);
+}
+
+.flowNum {
+  width: 22px;
+  height: 22px;
+  background: var(--ink-800);
+  color: var(--paper);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.flowArrow {
+  color: var(--ink-200);
+  font-size: 14px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── レスポンシブ ── */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--ink-100);
+  }
+
+  .main {
+    min-height: 60vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .statsGrid { grid-template-columns: repeat(3, 1fr); }
+  .placeholderFlow { flex-direction: column; }
+  .flowArrow { transform: rotate(90deg); }
+}

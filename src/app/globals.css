@@ -1,0 +1,187 @@
+/* ================================================================
+   globals.css
+   デザインシステム：ダークインク × ゴールドアクセント
+   工業的エディトリアル × 和モダン
+   ================================================================ */
+
+:root {
+  /* ── カラーパレット ── */
+  --ink-900: #0d0b08;
+  --ink-800: #1a1612;
+  --ink-700: #2a2520;
+  --ink-600: #3d3730;
+  --ink-400: #7a7068;
+  --ink-200: #c4bdb5;
+  --ink-100: #e8e2da;
+  --ink-050: #f4f0eb;
+
+  --paper:      #faf7f2;
+  --paper-warm: #f0ece5;
+  --paper-card: #fdfaf6;
+
+  --gold-600: #9a7a3a;
+  --gold-500: #b8924a;
+  --gold-400: #d4aa5e;
+  --gold-dim:  #f5ecd8;
+
+  --red-600:   #9a2e18;
+  --red-500:   #c94c2e;
+  --red-dim:   #f5ddd8;
+
+  --green-600: #2a5438;
+  --green-500: #3a6b4a;
+  --green-dim: #d8ebe0;
+
+  --blue-500:  #2a5a8a;
+  --blue-dim:  #d8e8f5;
+
+  /* ── タイポグラフィ ── */
+  --font-serif: 'Shippori Mincho', serif;
+  --font-sans:  'Zen Kaku Gothic New', sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+
+  /* ── スペーシング ── */
+  --radius-sm: 2px;
+  --radius:    4px;
+  --radius-lg: 8px;
+
+  /* ── シャドウ ── */
+  --shadow-sm: 0 1px 4px rgba(13,11,8,0.08);
+  --shadow:    0 2px 12px rgba(13,11,8,0.10);
+  --shadow-lg: 0 8px 32px rgba(13,11,8,0.14);
+  --shadow-xl: 0 20px 60px rgba(13,11,8,0.18);
+}
+
+/* ── リセット ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--ink-800);
+  line-height: 1.7;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── グリッド背景 ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--ink-100) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ink-100) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── ユーティリティ ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── アニメーション ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+/* ── スクロールバー ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--ink-050); }
+::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+
+/* ── マークダウンプレビュー ── */
+.markdown-body { line-height: 1.9; color: var(--ink-700); }
+.markdown-body h1 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink-800);
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--gold-400);
+}
+.markdown-body h2 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ink-800);
+  margin: 1.75rem 0 0.6rem;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ink-100);
+}
+.markdown-body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--red-500);
+  margin: 1.25rem 0 0.4rem;
+}
+.markdown-body p { margin-bottom: 1em; font-size: 0.9rem; }
+.markdown-body strong { font-weight: 700; color: var(--ink-800); }
+.markdown-body ul, .markdown-body ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.markdown-body li { margin-bottom: 0.25em; font-size: 0.9rem; }
+.markdown-body blockquote {
+  border-left: 3px solid var(--gold-400);
+  padding: 0.5em 1em;
+  margin: 1em 0;
+  background: var(--gold-dim);
+  color: var(--ink-600);
+  font-style: italic;
+}
+
+/* ── スケルトンローダー ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ink-100) 25%,
+    var(--ink-050) 50%,
+    var(--ink-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
