@@ -528,7 +528,7 @@ async function main() {
     const gitEmail = keysData
       ? (keysData["GITHUB_EMAIL"] || await ask(rl, "GitHubに登録しているメールアドレスを入力してください"))
       : await ask(rl, "GitHubに登録しているメールアドレスを入力してください");
-    const repoName       = "ai-note-generator";
+    const repoName       = "ai-note-starter-verify";
 
     runCommand('git config user.name "' + githubUsername + '"', true);
     runCommand('git config user.email "' + gitEmail + '"', true);
@@ -538,11 +538,25 @@ async function main() {
       if (r.success) {
         success("GitHubリポジトリを作成してpushしました");
       } else {
-        warn("GitHub CLIでの作成に失敗しました。手動でpushしてください");
-        await showManualPushGuide(rl, githubUsername, repoName);
+        warn("リポジトリが既に存在するため、既存リポジトリにpushします");
+        runCommand('git remote set-url origin https://github.com/' + githubUsername + '/' + repoName + '.git', true);
+        runCommand("git add .", true);
+        runCommand('git commit -m "initial setup"', true);
+        const pushResult = runCommand("git push -u origin main");
+        if (pushResult.success) {
+          success("GitHubにpushしました");
+        } else if (keysData) {
+          warn("pushに失敗しました。後で手動でpushしてください");
+        } else {
+          await showManualPushGuide(rl, githubUsername, repoName);
+        }
       }
     } else {
-      await showManualPushGuide(rl, githubUsername, repoName);
+      if (keysData) {
+        warn("GitHub CLIが見つかりません。後で手動でpushしてください");
+      } else {
+        await showManualPushGuide(rl, githubUsername, repoName);
+      }
     }
 
     // STEP 9: Vercel環境変数登録

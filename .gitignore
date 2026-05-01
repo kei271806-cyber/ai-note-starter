@@ -29,3 +29,10 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Setup
+keys.txt
+setup-complete.json
+
+keys.txt
+setup-complete.json
