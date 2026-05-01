@@ -300,6 +300,45 @@ function generateChannelId(name, index) {
 }
 
 // ─────────────────────────────────────────────────
+// keys.txt 読み込みヘルパー
+// ─────────────────────────────────────────────────
+function loadKeysFile(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  const result = {};
+  content.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex === -1) return;
+    const key   = trimmed.slice(0, eqIndex).trim();
+    const value = trimmed.slice(eqIndex + 1).trim();
+    result[key] = value;
+  });
+  return result;
+}
+
+function parseChannelsFromKeys(keys) {
+  const count = parseInt(keys["CHANNEL_COUNT"] || "1", 10);
+  const channels = [];
+  for (let i = 1; i <= count; i++) {
+    const name  = keys["CHANNEL_" + i + "_NAME"]  || "";
+    const genre = keys["CHANNEL_" + i + "_GENRE"] || "";
+    const readerLines = [];
+    for (let r = 1; r <= 5; r++) {
+      const line = keys["CHANNEL_" + i + "_READER_" + r];
+      if (line) readerLines.push(line);
+    }
+    const targetReader = readerLines.join("\n") || "30〜50代のビジネスパーソン";
+    const channelId    = generateChannelId(name, i - 1);
+    const envKey       = i === 1
+      ? "NOTION_DATABASE_ID"
+      : "NOTION_DATABASE_ID_" + channelId.toUpperCase().replace(/-/g, "_");
+    channels.push({ id: channelId, name, genre, targetReader, envKey });
+  }
+  return channels;
+}
+
+// ─────────────────────────────────────────────────
 // メイン処理
 // ─────────────────────────────────────────────────
 async function main() {
@@ -316,6 +355,19 @@ async function main() {
   log("所要時間：約20〜30分");
   log("途中でエラーが出た場合はそのままClaude.ai（claude.ai）に相談してください\n");
 
+  // ─────────────────────────────────────────────────
+  // keys.txt 自動検出
+  // ─────────────────────────────────────────────────
+  let keysData = null;
+  if (fs.existsSync("keys.txt")) {
+    try {
+      keysData = loadKeysFile("keys.txt");
+      console.log(color.bold(color.green("✅ keys.txt を検出しました。自動入力モードで実行します。\n")));
+    } catch (e) {
+      warn("keys.txt の読み込みに失敗しました。対話入力モードで続行します。");
+    }
+  }
+
   const rl = createRL();
 
   try {
@@ -331,17 +383,31 @@ async function main() {
 
     // STEP 2: APIキー入力
     step(2, "APIキーを入力してください");
-    hint("Notion:  notion.so/my-integrations");
-    hint("Gemini:  aistudio.google.com");
-    hint("Claude:  console.anthropic.com");
-    log("");
 
-    const notionKey  = await ask(rl, "① Notion APIキー（secret_から始まる）");
-    const geminiKey  = await ask(rl, "② Gemini APIキー（AIzaSyから始まる）");
-    const claudeKey  = await ask(rl, "③ Claude APIキー（sk-ant-から始まる）");
-    const cronSecret = await ask(rl, "④ Cron Secret（任意の文字列）", "cron-" + Date.now());
+    let notionKey, geminiKey, claudeKey, cronSecret;
 
-    if (!notionKey.startsWith("secret_")) { error("Notion APIキーは「secret_」から始まる必要があります"); process.exit(1); }
+    if (keysData) {
+      // keys.txtから自動読み込み
+      notionKey  = keysData["NOTION_API_KEY"]    || "";
+      geminiKey  = keysData["GEMINI_API_KEY"]    || "";
+      claudeKey  = keysData["ANTHROPIC_API_KEY"] || "";
+      cronSecret = keysData["CRON_SECRET"]       || "cron-" + Date.now();
+      log("  Notion APIキー：" + notionKey.slice(0, 10) + "...");
+      log("  Gemini APIキー：" + geminiKey.slice(0, 10) + "...");
+      log("  Claude APIキー：" + claudeKey.slice(0, 10) + "...");
+    } else {
+      // 対話形式で入力
+      hint("Notion:  notion.so/profile/integrations/internal");
+      hint("Gemini:  aistudio.google.com");
+      hint("Claude:  console.anthropic.com");
+      log("");
+      notionKey  = await ask(rl, "① Notion APIキー（secret_から始まる）");
+      geminiKey  = await ask(rl, "② Gemini APIキー（AIzaSyから始まる）");
+      claudeKey  = await ask(rl, "③ Claude APIキー（sk-ant-から始まる）");
+      cronSecret = await ask(rl, "④ Cron Secret（任意の文字列）", "cron-" + Date.now());
+    }
+
+    if (!notionKey.startsWith("secret_") && !notionKey.startsWith("ntn_")) { error("Notion APIキーは「secret_」または「ntn_」から始まる必要があります"); process.exit(1); }
     if (!geminiKey.startsWith("AIzaSy"))  { error("Gemini APIキーは「AIzaSy」から始まる必要があります"); process.exit(1); }
     if (!claudeKey.startsWith("sk-ant-")) { error("Claude APIキーは「sk-ant-」から始まる必要があります"); process.exit(1); }
 
@@ -349,42 +415,52 @@ async function main() {
 
     // STEP 3: チャンネル設定
     step(3, "チャンネル（ジャンル）を設定してください");
-    log("チャンネルとは、記事を投稿するジャンルのことです。");
-    log("例：AI副業・料理レシピ・子育て・投資・健康など\n");
 
-    const channelCount = parseInt(await ask(rl, "チャンネル数を入力してください（1〜5）", "1"), 10);
-    if (isNaN(channelCount) || channelCount < 1 || channelCount > 5) {
-      error("チャンネル数は1〜5の数字で入力してください");
-      process.exit(1);
-    }
+    let channels = [];
 
-    const channels = [];
+    if (keysData) {
+      // keys.txtから自動読み込み
+      channels = parseChannelsFromKeys(keysData);
+      channels.forEach((ch) => {
+        log("  チャンネル：" + ch.name + "（" + ch.genre + "）");
+      });
+      success("チャンネル設定を読み込みました");
+    } else {
+      // 対話形式で入力
+      log("チャンネルとは、記事を投稿するジャンルのことです。");
+      log("例：AI副業・料理レシピ・子育て・投資・健康など\n");
 
-    for (let i = 0; i < channelCount; i++) {
-      console.log(color.bold("\n── チャンネル " + (i + 1) + " の設定 ──"));
-
-      const name  = await ask(rl, "チャンネル名（例：AI副業、料理レシピ）");
-      const genre = await ask(rl, "このチャンネルのジャンル・テーマ（例：AIを使った副業・収益化）");
-
-      log(color.dim("\nターゲット読者を入力してください（複数ある場合は改行で区切る）"));
-      log(color.dim("例：30〜40代の会社員 / 副業に興味がある初心者"));
-      log(color.dim("（入力が終わったら空行でEnterを押してください）\n"));
-
-      const readerLines = [];
-      while (readerLines.length < 5) {
-        const line = await ask(rl, "読者像 " + (readerLines.length + 1) + "行目（空行で完了）");
-        if (!line) break;
-        readerLines.push(line);
+      const channelCount = parseInt(await ask(rl, "チャンネル数を入力してください（1〜5）", "1"), 10);
+      if (isNaN(channelCount) || channelCount < 1 || channelCount > 5) {
+        error("チャンネル数は1〜5の数字で入力してください");
+        process.exit(1);
       }
 
-      const targetReader = readerLines.join("\n") || "30〜50代のビジネスパーソン";
-      const channelId    = generateChannelId(name, i);
-      const envKey       = i === 0
-        ? "NOTION_DATABASE_ID"
-        : "NOTION_DATABASE_ID_" + channelId.toUpperCase().replace(/-/g, "_");
+      for (let i = 0; i < channelCount; i++) {
+        console.log(color.bold("\n── チャンネル " + (i + 1) + " の設定 ──"));
+        const name  = await ask(rl, "チャンネル名（例：AI副業、料理レシピ）");
+        const genre = await ask(rl, "このチャンネルのジャンル・テーマ（例：AIを使った副業・収益化）");
 
-      channels.push({ id: channelId, name, genre, targetReader, envKey });
-      success("チャンネル「" + name + "」の設定が完了しました");
+        log(color.dim("\nターゲット読者を入力してください（複数ある場合は改行で区切る）"));
+        log(color.dim("例：30〜40代の会社員 / 副業に興味がある初心者"));
+        log(color.dim("（入力が終わったら空行でEnterを押してください）\n"));
+
+        const readerLines = [];
+        while (readerLines.length < 5) {
+          const line = await ask(rl, "読者像 " + (readerLines.length + 1) + "行目（空行で完了）");
+          if (!line) break;
+          readerLines.push(line);
+        }
+
+        const targetReader = readerLines.join("\n") || "30〜50代のビジネスパーソン";
+        const channelId    = generateChannelId(name, i);
+        const envKey       = i === 0
+          ? "NOTION_DATABASE_ID"
+          : "NOTION_DATABASE_ID_" + channelId.toUpperCase().replace(/-/g, "_");
+
+        channels.push({ id: channelId, name, genre, targetReader, envKey });
+        success("チャンネル「" + name + "」の設定が完了しました");
+      }
     }
 
     // STEP 4: channels.ts 生成
@@ -446,9 +522,13 @@ async function main() {
 
     // STEP 8: GitHub push
     step(8, "GitHubにpushしています...");
-    const githubUsername = await ask(rl, "GitHubのユーザー名を入力してください");
-    const gitEmail       = await ask(rl, "GitHubに登録しているメールアドレスを入力してください");
-    const repoName       = "ai-note-starter";
+    const githubUsername = keysData
+      ? (keysData["GITHUB_USERNAME"] || await ask(rl, "GitHubのユーザー名を入力してください"))
+      : await ask(rl, "GitHubのユーザー名を入力してください");
+    const gitEmail = keysData
+      ? (keysData["GITHUB_EMAIL"] || await ask(rl, "GitHubに登録しているメールアドレスを入力してください"))
+      : await ask(rl, "GitHubに登録しているメールアドレスを入力してください");
+    const repoName       = "ai-note-generator";
 
     runCommand('git config user.name "' + githubUsername + '"', true);
     runCommand('git config user.email "' + gitEmail + '"', true);
